@@ -40,6 +40,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.dtstack.chunjun.connector.starrocks.options.StarRocksCommonOptions.AUTO_CREATE_TABLE;
+import static com.dtstack.chunjun.connector.starrocks.options.StarRocksCommonOptions.BUCKET_KEYS;
+import static com.dtstack.chunjun.connector.starrocks.options.StarRocksCommonOptions.BUCKET_NUM;
+import static com.dtstack.chunjun.connector.starrocks.options.StarRocksCommonOptions.DUPLICATE_KEYS;
 import static com.dtstack.chunjun.connector.starrocks.options.StarRocksCommonOptions.FENODES;
 import static com.dtstack.chunjun.connector.starrocks.options.StarRocksCommonOptions.MAX_RETRIES;
 import static com.dtstack.chunjun.connector.starrocks.options.StarRocksCommonOptions.PASSWORD;
@@ -180,6 +184,10 @@ public class StarRocksDynamicTableFactory
         String username = options.get(USERNAME);
         String password = options.get(PASSWORD);
         Integer maxRetries = options.get(MAX_RETRIES);
+        List<String> duplicateKeys = options.get(DUPLICATE_KEYS);
+        List<String> bucketKeys = options.get(BUCKET_KEYS);
+        Integer bucketNum = options.get(BUCKET_NUM);
+        Boolean autoCreateTable = options.get(AUTO_CREATE_TABLE);
         // loading
         conf.setUrl(url);
         conf.setFeNodes(feNodes);
@@ -188,6 +196,10 @@ public class StarRocksDynamicTableFactory
         conf.setUsername(username);
         conf.setPassword(password);
         conf.setMaxRetries(maxRetries);
+        conf.setBucketKeys(bucketKeys);
+        conf.setBucketNum(bucketNum);
+        conf.setDuplicateKeys(duplicateKeys);
+        conf.setAutoCreateTable(autoCreateTable);
         return conf;
     }
 

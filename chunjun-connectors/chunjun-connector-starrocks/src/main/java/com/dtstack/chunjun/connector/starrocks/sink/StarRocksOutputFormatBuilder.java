@@ -50,5 +50,9 @@ public class StarRocksOutputFormatBuilder
         }
         Preconditions.checkNotNull(conf.getUsername(), "starRocks username is required");
         Preconditions.checkNotNull(conf.getPassword(), "starRocks password is required");
+        if (conf.isAutoCreateTable()) {
+            Preconditions.checkNotNull(conf.getDuplicateKeys(), "starRocks duplicate keys is required for table creating.");
+            Preconditions.checkNotNull(conf.getBucketKeys(), "starRocks bucket keys is required for table creating.");
+        }
     }
 }

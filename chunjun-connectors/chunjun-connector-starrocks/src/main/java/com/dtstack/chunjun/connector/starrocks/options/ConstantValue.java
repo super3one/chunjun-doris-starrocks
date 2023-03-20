@@ -32,6 +32,8 @@ public class ConstantValue {
     public static final Integer MAX_RETRIES_DEFAULT = 3;
     public static final String WRITE_MODE_DEFAULT = "APPEND";
     public static final Integer BATCH_SIZE_DEFAULT = 1024 * 10;
+    public static final Integer BUCKET_NUM_DEFAULT = 1;
+    public static final Boolean AUTO_CREATE_TABLE_DEFAULT = false;
 
     // stream load
     public static final Integer HTTP_CHECK_TIMEOUT_DEFAULT = 10 * 1000;

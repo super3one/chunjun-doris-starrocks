@@ -67,4 +67,30 @@ public class StarRocksCommonOptions {
                     .intType()
                     .defaultValue(ConstantValue.MAX_RETRIES_DEFAULT)
                     .withDescription("request retry time");
+
+    public static final ConfigOption<List<String>> DUPLICATE_KEYS =
+            ConfigOptions.key("duplicateKeys")
+                    .stringType()
+                    .asList()
+                    .noDefaultValue()
+                    .withDescription("StarRocks duplicate keys for creating tables.");
+
+    public static final ConfigOption<List<String>> BUCKET_KEYS =
+            ConfigOptions.key("bucketKeys")
+                    .stringType()
+                    .asList()
+                    .noDefaultValue()
+                    .withDescription("StarRocks bucket keys for creating tables.");
+
+    public static final ConfigOption<Integer> BUCKET_NUM =
+            ConfigOptions.key("bucketNum")
+                    .intType()
+                    .defaultValue(ConstantValue.BUCKET_NUM_DEFAULT)
+                    .withDescription("StarRocks bucket number for creating tables.");
+
+    public static final ConfigOption<Boolean> AUTO_CREATE_TABLE =
+            ConfigOptions.key("autoCreateTable")
+                    .booleanType()
+                    .defaultValue(ConstantValue.AUTO_CREATE_TABLE_DEFAULT)
+                    .withDescription("");
 }

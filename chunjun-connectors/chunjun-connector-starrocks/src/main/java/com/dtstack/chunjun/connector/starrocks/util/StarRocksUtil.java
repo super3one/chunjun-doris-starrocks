@@ -18,6 +18,9 @@
 
 package com.dtstack.chunjun.connector.starrocks.util;
 
+import com.dtstack.chunjun.conf.FieldConf;
+import com.dtstack.chunjun.connector.starrocks.conf.StarRocksConf;
+import com.dtstack.chunjun.connector.starrocks.options.ConstantValue;
 import com.dtstack.chunjun.connector.starrocks.source.be.entity.QueryBeXTablets;
 import com.dtstack.chunjun.connector.starrocks.source.be.entity.QueryInfo;
 
@@ -26,6 +29,11 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.commons.codec.binary.Base64;
 
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -118,5 +126,65 @@ public class StarRocksUtil {
             str = strBuilder.toString();
         }
         return str;
+    }
+
+    public static String generateDdl(StarRocksConf conf) {
+        List<FieldConf> columns = conf.getColumn();
+        String dbName = conf.getDatabase();
+        String table = conf.getTable();
+        List<String> duplicateKeys = conf.getDuplicateKeys();
+        List<String> bucketKeys = conf.getBucketKeys();
+        Integer bucketNum = conf.getBucketNum();
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("CREATE TABLE IF NOT EXISTS ");
+        stringBuilder.append(dbName + "." + table);
+        stringBuilder.append(" (");
+
+        for (FieldConf field : columns) {
+            stringBuilder.append("`" + field.getName() + "` ");
+            stringBuilder.append(field.getType());
+            stringBuilder.append(",");
+        }
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        stringBuilder.append(") ");
+
+        stringBuilder.append("DUPLICATE KEY(");
+        for (String key : duplicateKeys) {
+            stringBuilder.append("`" + key + "`");
+            stringBuilder.append(",");
+        }
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        stringBuilder.append(") ");
+
+        stringBuilder.append("DISTRIBUTED BY HASH(");
+        for (String key : bucketKeys) {
+            stringBuilder.append("`" + key + "`");
+            stringBuilder.append(",");
+        }
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        stringBuilder.append(") ");
+
+        stringBuilder.append("BUCKETS ");
+        stringBuilder.append(bucketNum);
+        stringBuilder.append(" PROPERTIES (     \"replication_allocation\" = \"tag.location.default: 1\" );");
+
+        return stringBuilder.toString();
+    }
+
+    public static boolean executeSql(Connection conn, String sql) throws SQLException {
+        PreparedStatement preparedStatement = null;
+        boolean flag = false;
+        try {
+            preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.executeUpdate();
+            flag = true;
+        } catch (SQLException ignored) {
+        } finally {
+            if (preparedStatement != null) {
+                preparedStatement.close();
+            }
+        }
+        return flag;
     }
 }

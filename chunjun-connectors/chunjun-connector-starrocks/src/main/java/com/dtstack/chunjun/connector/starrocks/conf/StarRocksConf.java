@@ -45,6 +45,14 @@ public class StarRocksConf extends ChunJunCommonConf {
     private String password;
 
     private String writeMode;
+
+    private List<String> duplicateKeys;
+
+    private List<String> bucketKeys;
+
+    private boolean autoCreateTable;
+
+    private Integer bucketNum;
     /** * default value is 3 */
     private Integer maxRetries = 3;
 
@@ -75,6 +83,14 @@ public class StarRocksConf extends ChunJunCommonConf {
     private long beFetchMaxBytes = 1024 * 1024 * 1024;
 
     private Map<String, String> beSocketProperties = new HashMap<>();
+
+    public boolean isAutoCreateTable() {
+        return autoCreateTable;
+    }
+
+    public void setAutoCreateTable(boolean autoCreateTable) {
+        this.autoCreateTable = autoCreateTable;
+    }
 
     public String getUrl() {
         return url;
@@ -234,5 +250,29 @@ public class StarRocksConf extends ChunJunCommonConf {
 
     public void setBeSocketProperties(Map<String, String> beSocketProperties) {
         this.beSocketProperties = beSocketProperties;
+    }
+
+    public List<String> getDuplicateKeys() {
+        return duplicateKeys;
+    }
+
+    public void setDuplicateKeys(List<String> duplicateKeys) {
+        this.duplicateKeys = duplicateKeys;
+    }
+
+    public List<String> getBucketKeys() {
+        return bucketKeys;
+    }
+
+    public void setBucketKeys(List<String> bucketKeys) {
+        this.bucketKeys = bucketKeys;
+    }
+
+    public Integer getBucketNum() {
+        return bucketNum;
+    }
+
+    public void setBucketNum(Integer bucketNum) {
+        this.bucketNum = bucketNum;
     }
 }

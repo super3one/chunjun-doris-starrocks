@@ -20,9 +20,12 @@ package com.dtstack.chunjun.connector.starrocks.sink;
 
 import com.dtstack.chunjun.conf.FieldConf;
 import com.dtstack.chunjun.connector.starrocks.conf.StarRocksConf;
+import com.dtstack.chunjun.connector.starrocks.connection.StarRocksJdbcConnectionOptions;
+import com.dtstack.chunjun.connector.starrocks.connection.StarRocksJdbcConnectionProvider;
 import com.dtstack.chunjun.connector.starrocks.streamload.StarRocksSinkBufferEntity;
 import com.dtstack.chunjun.connector.starrocks.streamload.StarRocksStreamLoadFailedException;
 import com.dtstack.chunjun.connector.starrocks.streamload.StreamLoadManager;
+import com.dtstack.chunjun.connector.starrocks.util.StarRocksUtil;
 import com.dtstack.chunjun.sink.format.BaseRichOutputFormat;
 import com.dtstack.chunjun.throwable.ChunJunRuntimeException;
 
@@ -31,6 +34,8 @@ import org.apache.flink.table.data.RowData;
 import com.alibaba.fastjson.JSON;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -44,6 +49,9 @@ public class StarRocksOutputFormat extends BaseRichOutputFormat {
 
     @Override
     protected void openInternal(int taskNumber, int numTasks) throws IOException {
+        if (starRocksConf.isAutoCreateTable()) {
+            autoCreateTable();
+        }
         List<String> columnNameList =
                 starRocksConf.getColumn().stream()
                         .map(FieldConf::getName)
@@ -127,6 +135,19 @@ public class StarRocksOutputFormat extends BaseRichOutputFormat {
     protected void closeInternal() {
         if (streamLoadManager != null) {
             streamLoadManager.close();
+        }
+    }
+
+    private void autoCreateTable() {
+        StarRocksJdbcConnectionProvider provider = new StarRocksJdbcConnectionProvider(
+                new StarRocksJdbcConnectionOptions(
+                        starRocksConf.getUrl(), starRocksConf.getUsername(), starRocksConf.getPassword()));
+        String createTableSql = StarRocksUtil.generateDdl(starRocksConf);
+        LOG.info("Auto-creating table: {}", createTableSql);
+        try (Connection connection = provider.getConnection()) {
+            StarRocksUtil.executeSql(connection, createTableSql);
+        } catch (Exception e) {
+            LOG.error("Failed to create table. {}", e.getMessage());
         }
     }
 
