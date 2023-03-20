@@ -18,6 +18,8 @@
 
 package com.dtstack.flinkx.connector.doris.options;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import org.apache.flink.configuration.ConfigOption;
 import org.apache.flink.configuration.ConfigOptions;
 
@@ -138,4 +140,30 @@ public class DorisOptions {
                     .intType()
                     .defaultValue(DorisKeys.DORIS_BATCH_SIZE_DEFAULT)
                     .withDescription("");
+
+    public static final ConfigOption<Integer> BUCKET_NUM =
+            ConfigOptions.key("bucketNum")
+                    .intType()
+                    .defaultValue(DorisKeys.DORIS_BUCKET_NUM_DEFAULT)
+                    .withDescription("");
+
+    public static final ConfigOption<List<String>> BUCKET_KEYS =
+            ConfigOptions.key("bucketKeys")
+                    .stringType()
+                    .asList()
+                    .noDefaultValue()
+                    .withDescription("YOUR DORIS BUCKET KEYS");
+
+    public static final ConfigOption<List<String>> DUPLICATE_KEYS =
+            ConfigOptions.key("duplicateKeys")
+                    .stringType()
+                    .asList()
+                    .noDefaultValue()
+                    .withDescription("YOUR DORIS DUPLICATE KEYS");
+
+    public static final ConfigOption<Boolean> AUTO_CREATE_TABLE =
+            ConfigOptions.key("autoCreateTable")
+                    .booleanType()
+                    .defaultValue(DorisKeys.DORIS_AUTO_CREATE_TABLE_DEFAULT)
+                    .withDescription("WHETHER AUTO CREATE TABLE");
 }

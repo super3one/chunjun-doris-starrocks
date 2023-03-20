@@ -41,5 +41,9 @@ public class DorisOutputFormatBuilder extends BaseRichOutputFormatBuilder {
     }
 
     @Override
-    protected void checkFormat() {}
+    protected void checkFormat() {
+        if (!format.checkOptionLegal()) {
+            throw new IllegalArgumentException("自动建表缺少排序键和分桶键！");
+        }
+    }
 }

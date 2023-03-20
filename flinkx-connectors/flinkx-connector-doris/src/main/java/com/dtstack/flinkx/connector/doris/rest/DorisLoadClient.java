@@ -112,6 +112,54 @@ public class DorisLoadClient implements Serializable {
         // TODO sql support
     }
 
+    public void autoCreateTable() {
+        String sql = processSql();
+        LOG.info("Create table: {}", sql);
+        String namespace = FeRestService.getNamespace(conf);
+        boolean createTable = FeRestService.createTable(conf, namespace, sql);
+        if (!createTable) {
+            LOG.error("Failed to create table.");
+            throw new RuntimeException("Failed to create table.");
+        }
+    }
+
+    private String processSql() {
+        List<FieldConf> columns = conf.getColumn();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("CREATE TABLE IF NOT EXISTS ");
+        stringBuilder.append(conf.getDatabase() + "." + conf.getTable());
+        stringBuilder.append(" (");
+
+        for (FieldConf field : columns) {
+            stringBuilder.append("`" + field.getName() + "` ");
+            stringBuilder.append(field.getType());
+            stringBuilder.append(",");
+        }
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        stringBuilder.append(")");
+
+        stringBuilder.append(" DUPLICATE KEY(");
+        for (String key : conf.getDuplicateKeys()) {
+            stringBuilder.append("`" + key + "`");
+            stringBuilder.append(",");
+        }
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        stringBuilder.append(")");
+
+        stringBuilder.append(" DISTRIBUTED BY HASH(");
+        for (String key : conf.getBucketKeys()) {
+            stringBuilder.append("`" + key + "`");
+            stringBuilder.append(",");
+        }
+        stringBuilder.deleteCharAt(stringBuilder.length() - 1);
+        stringBuilder.append(")");
+
+        stringBuilder.append(" BUCKETS ");
+        stringBuilder.append(conf.getBucketNum());
+        stringBuilder.append(" PROPERTIES (     \"replication_allocation\" = \"tag.location.default: 1\" );");
+        return stringBuilder.toString();
+    }
+
     /**
      * Each time a RowData is processed, after a Carrier is obtained , it is added to the cache ,
      * and the position of each RowData is recorded.

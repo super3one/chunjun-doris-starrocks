@@ -26,6 +26,8 @@ import com.dtstack.flinkx.connector.doris.rest.module.BackendRow;
 import com.dtstack.flinkx.connector.doris.rest.module.PartitionDefinition;
 import com.dtstack.flinkx.connector.doris.rest.module.QueryPlan;
 import com.dtstack.flinkx.connector.doris.rest.module.Schema;
+import com.dtstack.flinkx.connector.doris.rest.module.Statistic;
+import com.dtstack.flinkx.connector.doris.rest.module.StatisticRow;
 import com.dtstack.flinkx.connector.doris.rest.module.Tablet;
 
 import org.apache.flink.shaded.guava30.com.google.common.annotations.VisibleForTesting;
@@ -88,6 +90,8 @@ public class FeRestService implements Serializable {
     private static final String QUERY_PLAN = "_query_plan";
     private static final String BACKENDS = "/rest/v1/system?path=//backends";
     private static final String FE_LOGIN = "/rest/v1/login";
+    private static final String STATISTIC = "/rest/v1/system?path=//statistic";
+    private static final String QUERY = "/api/query/";
 
     /**
      * send request to Doris FE and get response json string.
@@ -361,6 +365,71 @@ public class FeRestService implements Serializable {
                 + "/"
                 + options.getTable()
                 + "/";
+    }
+
+    public static boolean createTable(DorisConf options, String namespace, String sql) throws RuntimeException {
+        LOG.trace("Creating table.");
+        String feNode = randomEndpoint(options.getFeNodes());
+        String tableUrl = "http://" + feNode + QUERY + namespace.trim() + "/" + options.getTable();
+
+        HttpPost httpPost = new HttpPost(tableUrl);
+        String entity = "{\"stmt\": \"" + sql + "\"}";
+        StringEntity stringEntity = new StringEntity(entity, StandardCharsets.UTF_8);
+        stringEntity.setContentEncoding("UTF-8");
+        stringEntity.setContentType("application/json");
+        httpPost.setEntity(stringEntity);
+
+        String resStr = send(options, httpPost);
+        LOG.debug("Create table response: {}.", resStr);
+        return resStr.contains("success");
+    }
+
+
+    public static String getNamespace(DorisConf options) throws RuntimeException {
+        LOG.trace("Finding namespace.");
+        String feNode = randomEndpoint(options.getFeNodes());
+        String statisticUrl = "http://" + feNode + STATISTIC;
+        HttpGet httpGet = new HttpGet(statisticUrl);
+        String response = send(options, httpGet);
+        LOG.info("Statistic Info: {}", response);
+        return parseStatistic(response, options.getDatabase());
+    }
+
+    public static String parseStatistic(String response, String dbName) throws RuntimeException {
+        ObjectMapper mapper = new ObjectMapper();
+        Statistic statistic;
+        String namespace = null;
+        try {
+            statistic = mapper.readValue(response, Statistic.class);
+        } catch (JsonParseException e) {
+            String errMsg = "Doris statistic's response is not a json. res: " + response;
+            LOG.error(errMsg, e);
+            throw new RuntimeException(errMsg, e);
+        } catch (JsonMappingException e) {
+            String errMsg = "Doris statistic's response cannot map to statistic format. res: " + response;
+            LOG.error(errMsg, e);
+            throw new RuntimeException(errMsg, e);
+        } catch (IOException e) {
+            String errMsg = "Parse Doris statistic's response to json failed. res: " + response;
+            LOG.error(errMsg, e);
+            throw new RuntimeException(errMsg, e);
+        }
+
+        if (statistic == null) {
+            LOG.error(SHOULD_NOT_HAPPEN_MESSAGE);
+            throw new RuntimeException(SHOULD_NOT_HAPPEN_MESSAGE);
+        }
+        List<String> statisticRows = statistic.getRows()
+                .stream()
+                .map(StatisticRow::getDbName)
+                .collect(Collectors.toList());
+        for (String statis : statisticRows) {
+            String[] res = statis.split(":");
+            if (res[1].equalsIgnoreCase(dbName)) {
+                namespace = res[0];
+            }
+        }
+        return namespace;
     }
 
     /**

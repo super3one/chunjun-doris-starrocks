@@ -98,9 +98,13 @@ public final class DorisKeys {
 
     public static final Integer DORIS_BATCH_SIZE_DEFAULT = 1024;
 
+    public static final Integer DORIS_BUCKET_NUM_DEFAULT = 1;
+
     public static final Long DORIS_EXEC_MEM_LIMIT_DEFAULT = 2147483648L;
 
     public static final Boolean DORIS_DESERIALIZE_ARROW_ASYNC_DEFAULT = false;
+
+    public static final Boolean DORIS_AUTO_CREATE_TABLE_DEFAULT = false;
 
     public static final Integer DORIS_DESERIALIZE_QUEUE_SIZE_DEFAULT = 64;
 

@@ -58,6 +58,46 @@ public class DorisConf extends FlinkxCommonConf {
 
     private Properties loadProperties;
 
+    private boolean autoCreateTable;
+
+    private List<String> duplicateKeys;
+
+    private List<String> bucketKeys;
+
+    private Integer bucketNum;
+
+    public boolean isAutoCreateTable() {
+        return autoCreateTable;
+    }
+
+    public void setAutoCreateTable(boolean autoCreateTable) {
+        this.autoCreateTable = autoCreateTable;
+    }
+
+    public List<String> getDuplicateKeys() {
+        return duplicateKeys;
+    }
+
+    public void setDuplicateKeys(List<String> duplicateKeys) {
+        this.duplicateKeys = duplicateKeys;
+    }
+
+    public List<String> getBucketKeys() {
+        return bucketKeys;
+    }
+
+    public void setBucketKeys(List<String> bucketKeys) {
+        this.bucketKeys = bucketKeys;
+    }
+
+    public Integer getBucketNum() {
+        return bucketNum;
+    }
+
+    public void setBucketNum(Integer bucketNum) {
+        this.bucketNum = bucketNum;
+    }
+
     public String getFieldDelimiter() {
         return fieldDelimiter;
     }

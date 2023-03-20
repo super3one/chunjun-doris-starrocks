@@ -119,6 +119,13 @@ public class DorisDynamicTableFactory implements DynamicTableSinkFactory {
         dorisConf.setWriteMode(config.get(DorisOptions.WRITE_MODE));
         dorisConf.setBatchSize(config.get(DorisOptions.BATCH_SIZE));
 
+        dorisConf.setAutoCreateTable(config.get(DorisOptions.AUTO_CREATE_TABLE));
+        if (dorisConf.isAutoCreateTable()) {
+            dorisConf.setDuplicateKeys(config.get(DorisOptions.DUPLICATE_KEYS));
+            dorisConf.setBucketKeys(config.get(DorisOptions.BUCKET_KEYS));
+            dorisConf.setBucketNum(config.get(DorisOptions.BUCKET_NUM));
+        }
+
         return dorisConf;
     }
 

@@ -27,6 +27,7 @@ import com.dtstack.flinkx.sink.format.BaseRichOutputFormat;
 import com.dtstack.flinkx.throwable.WriteRecordException;
 
 import org.apache.flink.table.data.RowData;
+import org.apache.flink.util.CollectionUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,6 +62,14 @@ public class DorisOutputFormat extends BaseRichOutputFormat {
         }
     }
 
+    public boolean checkOptionLegal() {
+        if (options.isAutoCreateTable()) {
+            return !CollectionUtil.isNullOrEmpty(options.getBucketKeys())
+                    && !CollectionUtil.isNullOrEmpty(options.getDuplicateKeys());
+        }
+        return true;
+    }
+
     @Override
     public void open(int taskNumber, int numTasks) throws IOException {
         DorisStreamLoad dorisStreamLoad = new DorisStreamLoad(options);
@@ -71,6 +80,9 @@ public class DorisOutputFormat extends BaseRichOutputFormat {
     @Override
     protected void openInternal(int taskNumber, int numTasks) throws IOException {
         LOG.info("task number : {} , number task : {}", taskNumber, numTasks);
+        if (options.isAutoCreateTable()) {
+            client.autoCreateTable();
+        }
     }
 
     @Override
